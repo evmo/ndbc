@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-getNDBC <- function(buoyid, scope = "5d", date = NULL) {
+get_buoy <- function(buoyid, scope = "5d", date = NULL) {
 
 	buoyid <- toupper(buoyid)
 
