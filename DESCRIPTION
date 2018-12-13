@@ -9,4 +9,6 @@ License:
 Encoding: UTF-8
 LazyData: true
 Imports:
-    dplyr
+    dplyr,
+    readr
+RoxygenNote: 6.1.1
