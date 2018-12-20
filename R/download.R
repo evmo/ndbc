@@ -56,15 +56,24 @@ ndbc_read_zip <- function(url) {
   download.file(url, temp, method="curl", quiet=T)
 
   # get column names from top of file
-  names <- unlist(strsplit(substring(readLines(gzfile(temp),1),1),
-                           split="[[:space:]]+"))
+  names <-
+    unlist(strsplit(substring(gsub(
+      "#", "", readLines(gzfile(temp), 1)
+    ), 1),
+    split = "[[:space:]]+"))
   nastrings <- c("99.00","999","999.0","99.0","9999.0","")
-  dat <- read.table(gzfile(temp), sep="", col.names=names, skip=2, fill=T,
-                    colClasses="character", na.strings=nastrings,
-                    comment.char="")
+
+  dat <- readr::read_table(gzfile(temp),
+    col_names = names, col_types = cols(.default = "d"),
+    skip = 2, na = nastrings)
   unlink(temp)
   dat
 }
+
+## Base R read.table version
+# dat <- read.table(gzfile(temp), sep="", col.names=names, skip=2, fill=T,
+#                   colClasses="character", na.strings=nastrings,
+#                   comment.char="")
 
 #' Get last 5 days' data from a NDBC buoy
 #'
@@ -119,10 +128,78 @@ ndbc_histM <- function(buoy_id, month) {
 #'
 #' @return a data frame
 #' @export
+#' @importFrom magrittr "%<>%"
 #'
 #' @examples
 ndbc_histY <- function(buoy_id, year) {
-  url <- sprintf("%s/historical/stdmet/%s/h%d.txt.gz",
+  url <- sprintf("%s/historical/stdmet/%sh%s.txt.gz",
                  URLBASE, buoy_id, year)
-  ndbc_read_zip(url)
+  d <- ndbc_read_zip(url)
+  if ("YYYY" %in% names(d))
+    d %<>% rename(YY = YYYY)
+  if (any(d$YY < 100))
+    d %<>% mutate(YY = YY + 1900)
+  if (!("mm" %in% names(d)))
+    d$mm <- 0
+  if ("WD" %in% names(d))
+    d %<>% rename(WDIR = WD)
+  if ("BAR" %in% names(d))
+    d %<>% rename(PRES = BAR)
+  d %<>% mutate(
+    date = ISOdatetime(YY, MM, DD, hh, mm, 0, tz = "GMT")
+  ) %>%
+    select(-YY, -MM, -DD, -hh, -mm) %>%
+    select(date, everything())
+  return(d)
+}
+
+#' Find available years for a single buoy
+#'
+#' @param id
+#' @return vector of years
+avail_years_for_buoy <- function(id) {
+  all_buoy_years <- avail_buoy_years()
+  if (!(id %in% all_buoy_years$buoy))
+    stop(paste0("No historical data available for buoy ", id))
+  buoy_years <- subset(all_buoy_years, buoy == id)
+  buoy_years$year
+}
+
+#' Download, merge, & munge all historical data-years for a NDBC buoy
+#'
+#' @param id
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getAllHist <- function(id) {
+  years <- avail_years_for_buoy(id)
+
+  # download the first year
+  d <- ndbc_histY(id, years[1])
+  cleanEnv()
+  if (length(years) > 1) {
+
+    # download subsequent years, merge with first year
+    for (y in years[2:length(years)]) {
+      cat(paste0(toupper(id), "/", y, ": "))
+      ptm <- proc.time()
+      nextd <- ndbc_histY(id, y)
+      elapsed <- proc.time() - ptm
+      cat(paste0("downloaded in ", round(elapsed[[3]], 2), " seconds, "))
+      ptm <- proc.time()
+      d <- suppressMessages(full_join(d, nextd))
+      elapsed <- proc.time() - ptm
+      cat(paste0("processed in ", round(elapsed[[3]], 2), " seconds.\n"))
+      cleanEnv()
+      Sys.sleep(1)
+    }
+  }
+
+  # zip the merged DF and write to directory
+  outpath <- file.path("~/Downloads", paste0(toupper(id), ".csv.gz"))
+  z <- gzfile(outpath)
+  write.csv(d, z, row.names=F)
+  print(paste0(outpath, " written!"))
 }
