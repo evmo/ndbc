@@ -57,7 +57,7 @@ aggDOY <- function(daily_data, stat) {
       summarise(feat = max(feat))
   }
 
-  names(agg)[2] <- feature
+  names(agg)[2] <- "feature"
 
   return(agg)
 }
