@@ -3,8 +3,7 @@ Type: Package
 Title: Functions for Munging National Data Buoy Center
 Version: 0.1.0
 Authors@R: person("Evan", "Morrison", email = "emorrison@gmail.com", role = c("aut", "cre"))
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: 
 License: 
 Encoding: UTF-8
 LazyData: true
@@ -13,5 +12,8 @@ Imports:
     readr,
     stringr,
     magrittr,
-    xts
+    xts,
+    lubridate,
+    ggplot2,
+    measurements
 RoxygenNote: 6.1.1

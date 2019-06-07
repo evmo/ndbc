@@ -11,7 +11,7 @@ deduce_col_types <- function(buoy_data) {
 #'
 #' @return data.frame - Daily means for one feature
 #' @export
-#' @import xts, dplyr
+#' @import xts dplyr
 #'
 #' @examples
 #' reduceToDaily("FTPC1", "WTMP")
