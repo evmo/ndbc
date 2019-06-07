@@ -50,6 +50,7 @@ ndbc_read_txt <- function(url) {
 #' Download and read a gzipped historical data file from NDBC
 #'
 #' @param url
+#' @importFrom readr read_table cols
 #' @return a data frame
 ndbc_read_zip <- function(url) {
   temp <- tempfile()
@@ -63,11 +64,15 @@ ndbc_read_zip <- function(url) {
     split = "[[:space:]]+"))
   nastrings <- c("99.00","999","999.0","99.0","9999.0","")
 
-  dat <- readr::read_table(gzfile(temp),
-    col_names = names, col_types = cols(.default = "d"),
-    skip = 2, na = nastrings)
+  dat <- read_table(
+    gzfile(temp),
+    col_names = names,
+    col_types = cols(.default = "d"),
+    skip = 2,
+    na = nastrings
+  )
   unlink(temp)
-  dat
+  return(dat)
 }
 
 ## Base R read.table version
@@ -133,7 +138,7 @@ ndbc_histM <- function(buoy_id, month) {
 #' @examples
 ndbc_histY <- function(buoy_id, year) {
   url <- sprintf("%s/historical/stdmet/%sh%s.txt.gz",
-                 URLBASE, buoy_id, year)
+                 URLBASE, tolower(buoy_id), year)
   d <- ndbc_read_zip(url)
   if ("YYYY" %in% names(d))
     d %<>% rename(YY = YYYY)
@@ -202,4 +207,32 @@ getAllHist <- function(id) {
   z <- gzfile(outpath)
   write.csv(d, z, row.names=F)
   print(paste0(outpath, " written!"))
+}
+
+#' Get window of NDBC std met data
+#'
+#' @param buoy_id
+#' @param start
+#' @param end
+#'
+#' @return
+#' @importFrom lubridate year month
+#' @export
+#'
+#' @examples
+ndbc_window <- function(buoy_id, start, end) {
+  start <- as.POSIXct(start, tz = 'UTC')
+  end <- as.POSIXct(end, tz = "UTC")
+  if (year(start) < year(Sys.Date())) {
+    d <- ndbc_histY(buoy_id, year(start))
+  } else {
+    if (month(start) == month(end))
+      d <- ndbc_histM(buoy_id, month(start))
+    else {
+      d1 <- ndbc_histM(buoy_id, start)
+      d2 <- ndbc_histM(buoy_id, end)
+      d <- bind_rows(d1, d2)
+    }
+  }
+  filter(d, date > start, date < end)
 }
