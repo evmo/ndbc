@@ -43,8 +43,9 @@ ndbc_read_txt <- function(url) {
   names <- unlist(strsplit(substring(readr::read_lines(url, n_max = 1), 2),
                   split="[[:space:]]+"))
   NAs <- "MM"
-  read.table(url, sep="", col.names=names, skip=2, na.strings=NAs,
-             colClasses="character", comment.char="", fill=T)
+  read_table(url, col_names = names, skip = 2, na = NAs, comment = "")
+  #read.table(url, sep="", col.names=names, skip=2, na.strings=NAs,
+             #colClasses="character", comment.char="", fill=T)
 }
 
 #' Download and read a gzipped historical data file from NDBC
@@ -89,7 +90,7 @@ ndbc_read_zip <- function(url) {
 #'
 #' @examples
 ndbc_5d <- function(buoy_id) {
-  url <- sprintf("%s/5day2/%s_5day.txt", URLBASE, buoy_id)
+  url <- sprintf("%s/5day2/%s_5day.txt", URLBASE, toupper(buoy_id))
   ndbc_read_txt(url)
 }
 
