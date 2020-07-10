@@ -13,7 +13,7 @@ ndbc_hourly_hour <- function(hour) {
     url,
     col_names = c("id","YY","MM","DD","hh","mm","WDIR","WSPD","GST","WVHT","DPD",
                   "APD","MWD","PRES","ATMP","WTMP","DEWP","VIS","PTDY","TIDE"),
-    col_types = "iiiiiiiddddddddddddd",
+    col_types = "ciiiiiiddddddddddddd",
     skip = 2,
     na = "MM"
   ) %>%
