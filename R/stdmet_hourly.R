@@ -55,7 +55,8 @@ ndbc_hourly_mut <- function(data) {
         paste0(YY, "-", MM, "-", DD, " ", hh, ":", mm, ":00")),
       WNDD = toCardinal(WDIR),
       WAVD = toCardinal(MWD)
-    )
+    ) %>%
+    select(-YY, -MM, -DD, -hh, -mm)
 }
 
 #' Read all hours of std-met data from NDBC 'hourly2' directory
