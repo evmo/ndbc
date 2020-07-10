@@ -9,6 +9,9 @@ getAllHist(id)
 \arguments{
 \item{id}{}
 }
+\value{
+
+}
 \description{
 Download, merge, & munge all historical data-years for a NDBC buoy
 }

@@ -9,6 +9,9 @@ ndbc_imperial(data)
 \arguments{
 \item{data}{}
 }
+\value{
+
+}
 \description{
 Convert NDBC data to Imperial units
 }

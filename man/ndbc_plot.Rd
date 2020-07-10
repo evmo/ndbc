@@ -9,6 +9,9 @@ ndbc_plot(data, feature, ylab, tz_offset, conv_units = NULL)
 \arguments{
 \item{conv_units}{}
 }
+\value{
+
+}
 \description{
 Plot NDBC feature
 }

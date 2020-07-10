@@ -9,6 +9,9 @@ ndbc_window(buoy_id, start, end)
 \arguments{
 \item{end}{}
 }
+\value{
+
+}
 \description{
 Get window of NDBC std met data
 }
