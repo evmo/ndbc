@@ -15,5 +15,6 @@ Imports:
     xts,
     lubridate,
     ggplot2,
-    measurements
-RoxygenNote: 6.1.1
+    measurements,
+    purrr
+RoxygenNote: 7.0.1
