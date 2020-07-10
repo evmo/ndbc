@@ -16,5 +16,6 @@ Imports:
     lubridate,
     ggplot2,
     measurements,
-    purrr
+    purrr,
+    shiny
 RoxygenNote: 7.0.1
