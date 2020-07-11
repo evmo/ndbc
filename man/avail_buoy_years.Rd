@@ -2,7 +2,7 @@
 % Please edit documentation in R/helper.R
 \name{avail_buoy_years}
 \alias{avail_buoy_years}
-\title{Find available historical year data for every NDBC buoy}
+\title{Find available buoy years}
 \usage{
 avail_buoy_years()
 }
@@ -10,5 +10,5 @@ avail_buoy_years()
 a tibble with two columns: "buoy" and "year"
 }
 \description{
-Find available historical year data for every NDBC buoy
+For each NDBC buoy, which years are available?
 }
