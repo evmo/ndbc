@@ -3,7 +3,6 @@
 export(avail_buoy_years)
 export(getAllHist)
 export(ndbc_explorer)
-export(ndbc_fix)
 export(ndbc_hourly_all)
 export(ndbc_hourly_hour)
 export(ndbc_hourly_mut)
