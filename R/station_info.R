@@ -56,3 +56,33 @@ minDistFromOther <- function(station_info) {
   minDists <- select(minDists, id = buoy1, dist = mindist)
   return(minDists)
 }
+
+#' Find available buoy years
+#'
+#' For each NDBC buoy, which years are available?
+#'
+#' @return a tibble with two columns: "buoy" and "year"
+#' @export
+#' @importFrom purrr map
+#' @importFrom stringr str_extract '%>%'
+avail_buoy_years <- function() {
+  url <- "https://www.ndbc.noaa.gov/data/historical/stdmet/"
+  buoy_years <- readr::read_lines(url) %>%  # large char vector
+    magrittr::extract(grepl("\\.txt\\.gz", .)) %>%  # lines with txt.gz files
+    map(~ str_extract(.x, "(?<=href=\").{5}h\\d{4}"))
+  buoys <- unlist(map(buoy_years, ~ str_extract(.x, "^.{5}")))
+  years <- unlist(map(buoy_years, ~ str_extract(.x, "\\d{4}$")))
+  tibble::tibble(buoy = buoys, year = as.integer(years))
+}
+
+#' Find available years for a single buoy
+#'
+#' @param id
+#' @return vector of years
+avail_years_for_buoy <- function(id) {
+  all_buoy_years <- avail_buoy_years()
+  if (!(id %in% all_buoy_years$buoy))
+    stop(paste0("No historical data available for buoy ", id))
+  buoy_years <- subset(all_buoy_years, buoy == id)
+  buoy_years$year
+}
