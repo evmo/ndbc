@@ -3,7 +3,6 @@
 #' @param day
 #'
 #' @return
-#' @export
 basetime <- function(day) {
   as.POSIXct(paste0(as.character(day), ' 00:00:01'), tz = 'GMT')
 }
@@ -15,7 +14,6 @@ basetime <- function(day) {
 #'
 #' @return
 #' @importFrom dplyr select transmute '%>%' as_tibble
-#' @export
 metoffice_munge <- function(data, day) {
   data %>%
     as_tibble %>%
