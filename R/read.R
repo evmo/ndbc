@@ -27,7 +27,7 @@ ndbc_read <- function(url) {
   readr::read_table(
     url,
     col_names = ndbc_read_cols(url),
-    col_types = cols(.default = "d"),
+    col_types = readr::cols(.default = "d"),
     skip = 2,
     na = c("MM", "99.00","999","999.0","99.0","9999.0",""),
     comment = ""
