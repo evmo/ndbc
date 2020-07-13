@@ -17,5 +17,6 @@ Imports:
     ggplot2,
     measurements,
     purrr,
-    shiny
+    shiny,
+    rvest
 RoxygenNote: 7.0.1
