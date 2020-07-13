@@ -18,5 +18,6 @@ Imports:
     measurements,
     purrr,
     shiny,
-    rvest
+    rvest,
+    xml2
 RoxygenNote: 7.0.1

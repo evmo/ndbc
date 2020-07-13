@@ -14,10 +14,10 @@ getAvg <- function(minavgmax) {
 #' Read data table from JPL Lake Tahoe weather page
 #'
 #' @return
-#' @importFrom rvest read_html html_node html_table '%>%'
+#' @importFrom rvest html_node html_table '%>%'
 #' @export
 tahoe_read_table <- function() {
-  raw <- read_html(URL) %>%
+  raw <- xml2::read_html(URL) %>%
     html_node("div#content table") %>%
     html_table(fill = T)
 
