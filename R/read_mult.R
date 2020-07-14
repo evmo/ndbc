@@ -45,10 +45,7 @@ getAllHist <- function(id) {
 #'
 #' @return
 #' @importFrom lubridate year month
-#' @export
-#'
-#' @examples
-ndbc_window <- function(buoy_id, start, end) {
+ndbc_window_old <- function(buoy_id, start, end) {
   start <- as.POSIXct(start, tz = 'UTC')
   end <- as.POSIXct(end, tz = "UTC")
   if (year(start) < year(Sys.Date())) {
@@ -63,6 +60,24 @@ ndbc_window <- function(buoy_id, start, end) {
     }
   }
   dplyr::filter(d, date > start, date < end)
+}
+
+#' Read std met data from arbitrary window of dates
+#'
+#' @param buoy_id
+#' @param start_date
+#' @param end_date
+#'
+#' @return
+#' @export
+#'
+#' @examples
+ndbc_window <- function(buoy_id, start_date, end_date) {
+  start <- as.Date(start_date)
+  end <- as.Date(end_date)
+  today <- Sys.Date()
+  if (start > today - 5)
+    d <- ndbc_read_5day(buoy_id)
 }
 
 # Download short-term data for multiple NDBC buoys.
