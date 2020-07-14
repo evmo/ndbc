@@ -37,29 +37,28 @@ getAllHist <- function(id) {
   print(paste0(outpath, " written!"))
 }
 
-#' Get window of NDBC std met data
+#' Read and bind multiple monthly datasets
 #'
+#' @param start_month
+#' @param end_month
 #' @param buoy_id
-#' @param start
-#' @param end
 #'
 #' @return
-#' @importFrom lubridate year month
-ndbc_window_old <- function(buoy_id, start, end) {
-  start <- as.POSIXct(start, tz = 'UTC')
-  end <- as.POSIXct(end, tz = "UTC")
-  if (year(start) < year(Sys.Date())) {
-    d <- ndbc_read_year(buoy_id, year(start))
-  } else {
-    if (month(start) == month(end))
-      d <- ndbc_read_month_recent(buoy_id, month(start))
-    else {
-      d1 <- ndbc_read_month_recent(buoy_id, start)
-      d2 <- ndbc_read_month_recent(buoy_id, end)
-      d <- dplyr::bind_rows(d1, d2)
-    }
-  }
-  dplyr::filter(d, date > start, date < end)
+ndbc_read_mult_month <- function(buoy_id, start_month, end_month) {
+  purrr::map_df(seq(start_month, end_month),
+                ~ ndbc_read_month_recent(buoy_id, .x))
+}
+
+#' Read and bind multiple yearly datasets
+#'
+#' @param start_year
+#' @param end_year
+#' @param buoy_id
+#'
+#' @return
+ndbc_read_mult_year <- function(buoy_id, start_year, end_year) {
+  purrr::map_df(seq(start_year, end_year),
+                ~ ndbc_read_year(buoy_id, .x))
 }
 
 #' Read std met data from arbitrary window of dates
@@ -67,6 +66,7 @@ ndbc_window_old <- function(buoy_id, start, end) {
 #' @param buoy_id
 #' @param start_date
 #' @param end_date
+#' @importFrom lubridate year month
 #'
 #' @return
 #' @export
@@ -76,8 +76,28 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
   start <- as.Date(start_date)
   end <- as.Date(end_date)
   today <- Sys.Date()
+
+  # window is within past 5 days
   if (start > today - 5)
     d <- ndbc_read_5day(buoy_id)
+  # window is within past 45 days
+  else if (start > today - 45)
+    d <- ndbc_read_45day(buoy_id)
+  # window is within current year
+  else if (start == year(today))
+    d <- ndbc_read_mult_month(buoy_id, month(start), month(end))
+  else {  # window includes prior years (need historical data)
+    if (year(end) < year(today))  # window doesn't include current year
+      d <- ndbc_read_mult_year(buoy_id, year(start), year(end))
+    else {  # window includes both prior year(s) and current year
+      d <- dplyr::bind_rows(
+        ndbc_read_mult_year(buoy_id, year(start), year(end) - 1),
+        ndbc_read_mult_month(buoy_id, 1, month(end))
+      )
+    }
+  }
+
+  dplyr::filter(d, date > start, date < end)
 }
 
 # Download short-term data for multiple NDBC buoys.
