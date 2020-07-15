@@ -60,7 +60,9 @@ ndbc_munge <- function(data) {
 #'
 #' @examples
 ndbc_read_5day <- function(buoy_id) {
-  sprintf("%s/5day2/%s_5day.txt", URLBASE, toupper(buoy_id)) %>%
+  buoy <- toupper(buoy_id)
+  print(glue::glue("Reading {buoy} (5-day)"))
+  sprintf("%s/5day2/%s_5day.txt", URLBASE, buoy) %>%
     ndbc_read %>%
     ndbc_munge
 }
@@ -75,7 +77,9 @@ ndbc_read_5day <- function(buoy_id) {
 #'
 #' @examples
 ndbc_read_45day <- function(buoy_id) {
-  sprintf("%s/realtime2/%s.txt", URLBASE, toupper(buoy_id)) %>%
+  buoy <- toupper(buoy_id)
+  print(glue::glue("Reading {buoy} (45-day)"))
+  sprintf("%s/realtime2/%s.txt", URLBASE, buoy) %>%
     ndbc_read %>%
     ndbc_munge
 }
@@ -92,12 +96,11 @@ ndbc_read_45day <- function(buoy_id) {
 #'
 #' @examples
 ndbc_read_month_recent <- function(buoy_id, month) {
-  months <- c("Jan","Feb","Mar","Apr","May","Jun",
-              "Jul","Aug","Sep","Oct","Nov","Dec")
+  print(glue::glue("Reading {toupper(buoy_id)} ({month.name[month]})"))
 
   sprintf("%s/stdmet/%s/%s%s",
           URLBASE,
-          months[month],
+          month.name[month],
           tolower(buoy_id),
           paste0(month, format(Sys.Date(), "%Y"), ".txt.gz")) %>%
     ndbc_read %>%
@@ -137,6 +140,7 @@ ndbc_fix <- function(data) {
 #'
 #' @examples
 ndbc_read_year <- function(buoy_id, year) {
+  print(glue::glue("Reading {toupper(buoy_id)} ({year})"))
   ndbc_read(
     sprintf("%s/historical/stdmet/%sh%s.txt.gz",
             URLBASE,
