@@ -2,16 +2,13 @@
 % Please edit documentation in R/read_mult.R
 \name{ndbc_window}
 \alias{ndbc_window}
-\title{Get window of NDBC std met data}
+\title{Read std met data from arbitrary window of dates}
 \usage{
-ndbc_window(buoy_id, start, end)
-}
-\arguments{
-\item{end}{}
+ndbc_window(buoy_id, start_date, end_date)
 }
 \value{
 
 }
 \description{
-Get window of NDBC std met data
+Read std met data from arbitrary window of dates
 }

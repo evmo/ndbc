@@ -75,7 +75,7 @@ ndbc_read_5day <- function(buoy_id) {
 #'
 #' @examples
 ndbc_read_45day <- function(buoy_id) {
-  sprintf("%s/realtime2/%s.txt", URLBASE, buoy_id) %>%
+  sprintf("%s/realtime2/%s.txt", URLBASE, toupper(buoy_id)) %>%
     ndbc_read %>%
     ndbc_munge
 }

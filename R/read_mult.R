@@ -61,6 +61,19 @@ ndbc_read_mult_year <- function(buoy_id, start_year, end_year) {
                 ~ ndbc_read_year(buoy_id, .x))
 }
 
+#' Remove duplicate rows
+#'
+#' @param data
+#'
+#' @importFrom dplyr arrange distinct '%>%'
+#'
+#' @return
+ndbc_dedup <- function(data) {
+  data %>%
+    arrange(date) %>%
+    distinct(date, .keep_all = TRUE)
+}
+
 #' Read std met data from arbitrary window of dates in current year
 #'
 #' @param buoy_id
@@ -83,10 +96,17 @@ ndbc_window_current_year <- function(buoy_id, start_date, end_date) {
   else if (start > today - 45)
     d <- ndbc_read_45day(buoy_id)
   # window is within current year
-  else
-    d <- ndbc_read_mult_month(buoy_id, month(start), month(end))
+  else {
+    if (end < today - 45)
+      d <- ndbc_read_mult_month(buoy_id, month(start), month(end))
+    else
+      d <- ndbc_dedup(dplyr::bind_rows(
+        ndbc_read_mult_month(buoy_id, month(start), month(end - 45)),
+        ndbc_read_45day(buoy_id)
+      ))
+  }
 
-  return(d)
+  dplyr::filter(d, date > start, date <= end)
 }
 
 #' Read std met data from arbitrary window of dates
@@ -113,12 +133,12 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
       ndbc_window_current_year(
         buoy_id,
         as.Date(ISOdate(year(today), 1, 1)),
-        month(end)
+        end
       )
     )
   }
 
-  dplyr::filter(d, date > start, date < end)
+  dplyr::filter(d, date > start, date <= end)
 }
 
 # Download short-term data for multiple NDBC buoys.
