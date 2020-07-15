@@ -61,6 +61,34 @@ ndbc_read_mult_year <- function(buoy_id, start_year, end_year) {
                 ~ ndbc_read_year(buoy_id, .x))
 }
 
+#' Read std met data from arbitrary window of dates in current year
+#'
+#' @param buoy_id
+#' @param start_date
+#' @param end_date
+#' @importFrom lubridate year month
+#'
+#' @return
+ndbc_window_current_year <- function(buoy_id, start_date, end_date) {
+  start <- as.Date(start_date)
+  end <- as.Date(end_date)
+  today <- Sys.Date()
+
+  if (year(start) < year(today))
+    stop("Start and end dates must be in current year")
+  # window is within past 5 days
+  else if (start > today - 5)
+    d <- ndbc_read_5day(buoy_id)
+  # window is within past 45 days
+  else if (start > today - 45)
+    d <- ndbc_read_45day(buoy_id)
+  # window is within current year
+  else
+    d <- ndbc_read_mult_month(buoy_id, month(start), month(end))
+
+  return(d)
+}
+
 #' Read std met data from arbitrary window of dates
 #'
 #' @param buoy_id
@@ -77,24 +105,17 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
   end <- as.Date(end_date)
   today <- Sys.Date()
 
-  # window is within past 5 days
-  if (start > today - 5)
-    d <- ndbc_read_5day(buoy_id)
-  # window is within past 45 days
-  else if (start > today - 45)
-    d <- ndbc_read_45day(buoy_id)
-  # window is within current year
-  else if (start == year(today))
-    d <- ndbc_read_mult_month(buoy_id, month(start), month(end))
-  else {  # window includes prior years (need historical data)
-    if (year(end) < year(today))  # window doesn't include current year
-      d <- ndbc_read_mult_year(buoy_id, year(start), year(end))
-    else {  # window includes both prior year(s) and current year
-      d <- dplyr::bind_rows(
-        ndbc_read_mult_year(buoy_id, year(start), year(end) - 1),
-        ndbc_read_mult_month(buoy_id, 1, month(end))
+  if (year(end) < year(today))  # window doesn't include current year
+    d <- ndbc_read_mult_year(buoy_id, year(start), year(end))
+  else {  # window includes both prior year(s) and current year
+    d <- dplyr::bind_rows(
+      ndbc_read_mult_year(buoy_id, year(start), year(end) - 1),
+      ndbc_window_current_year(
+        buoy_id,
+        as.Date(ISOdate(year(today), 1, 1)),
+        month(end)
       )
-    }
+    )
   }
 
   dplyr::filter(d, date > start, date < end)
