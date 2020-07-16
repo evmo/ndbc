@@ -4,10 +4,10 @@
 \alias{ndbc_read_mult_year}
 \title{Read and bind multiple yearly datasets}
 \usage{
-ndbc_read_mult_year(buoy_id, start_year, end_year)
+ndbc_read_mult_year(buoy_id, years)
 }
 \arguments{
-\item{buoy_id}{}
+\item{years}{list of years}
 }
 \value{
 

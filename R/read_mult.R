@@ -1,42 +1,3 @@
-#' Download, merge, & munge all historical data-years for a NDBC buoy
-#'
-#' @param id
-#'
-#' @return
-#' @export
-#'
-#' @examples
-getAllHist <- function(id) {
-  years <- avail_years_for_buoy(id)
-
-  # download the first year
-  d <- ndbc_read_year(id, years[1])
-  cleanEnv()
-  if (length(years) > 1) {
-
-    # download subsequent years, merge with first year
-    for (y in years[2:length(years)]) {
-      cat(paste0(toupper(id), "/", y, ": "))
-      ptm <- proc.time()
-      nextd <- ndbc_read_year(id, y)
-      elapsed <- proc.time() - ptm
-      cat(paste0("downloaded in ", round(elapsed[[3]], 2), " seconds, "))
-      ptm <- proc.time()
-      d <- suppressMessages(full_join(d, nextd))
-      elapsed <- proc.time() - ptm
-      cat(paste0("processed in ", round(elapsed[[3]], 2), " seconds.\n"))
-      cleanEnv()
-      Sys.sleep(1)
-    }
-  }
-
-  # zip the merged DF and write to directory
-  outpath <- file.path("~/Downloads", paste0(toupper(id), ".csv.gz"))
-  z <- gzfile(outpath)
-  write.csv(d, z, row.names=F)
-  print(paste0(outpath, " written!"))
-}
-
 #' Read and bind multiple monthly datasets
 #'
 #' @param start_month
@@ -51,14 +12,12 @@ ndbc_read_mult_month <- function(buoy_id, start_month, end_month) {
 
 #' Read and bind multiple yearly datasets
 #'
-#' @param start_year
-#' @param end_year
 #' @param buoy_id
+#' @param years list of years
 #'
 #' @return
-ndbc_read_mult_year <- function(buoy_id, start_year, end_year) {
-  purrr::map_df(seq(start_year, end_year),
-                ~ ndbc_read_year(buoy_id, .x))
+ndbc_read_mult_year <- function(buoy_id, years) {
+  purrr::map_df(years, ~ ndbc_read_year(buoy_id, .x))
 }
 
 #' Remove duplicate rows
@@ -129,7 +88,7 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
     d <- ndbc_read_mult_year(buoy_id, year(start), year(end))
   else {  # window includes both prior year(s) and current year
     d <- dplyr::bind_rows(
-      ndbc_read_mult_year(buoy_id, year(start), year(end) - 1),
+      ndbc_read_mult_year(buoy_id, seq(year(start), year(end) - 1)),
       ndbc_window_current_year(
         buoy_id,
         as.Date(ISOdate(year(today), 1, 1)),
@@ -139,6 +98,17 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
   }
 
   dplyr::filter(d, date > start, date <= end)
+}
+
+#' Download, merge, & munge all historical data-years for a NDBC buoy
+#'
+#' @param buoy_id
+#'
+#' @return
+#' @export
+ndbc_all_hist <- function(buoy_id) {
+  purrr::map_df(avail_years_for_buoy(buoy_id),
+                ~ ndbc_read_mult_year(.x))
 }
 
 # Download short-term data for multiple NDBC buoys.
@@ -178,57 +148,4 @@ refresh45 <- function(buoylist, path = "./") {
       subset(as.Date(date) == yesterday)
     write.table(newData, fn, append = T, row.names = F, col.names = F, sep = ",")
   }
-}
-
-# Download all historical data-years for a NDBC buoy,
-# unzip, merge, munge, and re-zip into single file.
-# Modified: 20150402
-
-getAllHist <- function(id) {
-  # remove temp DFs created by each call to getNDBC()
-  cleanEnv <- function() {
-    rm(list=ls(pattern = "b.{5}_\\d{4}", pos=".GlobalEnv"), envir=.GlobalEnv)
-  }
-
-  # get available years for the buoy
-  BY <- read.csv("buoyYears.csv")
-  if (!(id %in% BY$buoy))
-    stop(paste0("No historical data available for buoy ", id))
-  BY <- subset(BY, buoy==id)
-  years <- as.character(BY$year)
-
-  # download the first year
-  d <- getNDBC(id, scope = "histY", date = years[1])
-  cleanEnv()
-  if (length(years) > 1) {
-
-    # download subsequent years, merge with first year
-    for (y in years[2:length(years)]) {
-      cat(paste0(toupper(id), "/", y, ": "))
-      ptm <- proc.time()
-      nextd <- getNDBC(id, scope = "histY", date = y)
-      elapsed <- proc.time() - ptm
-      cat(paste0("downloaded in ", round(elapsed[[3]], 2), " seconds, "))
-      ptm <- proc.time()
-      d <- merge(d, nextd, all = T)
-      elapsed <- proc.time() - ptm
-      cat(paste0("processed in ", round(elapsed[[3]], 2), " seconds.\n"))
-      cleanEnv()
-      Sys.sleep(1)
-    }
-  }
-
-  # zip the merged DF and write to directory
-  outpath <- paste0("hist/", toupper(id), ".csv.gz")
-  z <- gzfile(outpath)
-  write.csv(d, z, row.names=F)
-  print(paste0(outpath, " written!"))
-}
-
-# Get all historical data from a list of multiple NDBC buoys
-# Modified: 20150402
-
-getAllHistMult <- function(buoylist) {
-  for (b in buoylist)
-    try(getAllHist(b))
 }

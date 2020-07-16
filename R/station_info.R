@@ -62,7 +62,6 @@ minDistFromOther <- function(station_info) {
 #' For each NDBC buoy, which years are available?
 #'
 #' @return a tibble with two columns: "buoy" and "year"
-#' @export
 #' @importFrom purrr map
 #' @importFrom stringr str_extract '%>%'
 avail_buoy_years <- function() {
@@ -78,6 +77,7 @@ avail_buoy_years <- function() {
 #' Find available years for a single buoy
 #'
 #' @param id
+#' @export
 #' @return vector of years
 avail_years_for_buoy <- function(id) {
   all_buoy_years <- avail_buoy_years()
