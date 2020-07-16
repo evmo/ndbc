@@ -108,7 +108,7 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
 #' @export
 ndbc_all_hist <- function(buoy_id) {
   purrr::map_df(avail_years_for_buoy(buoy_id),
-                ~ ndbc_read_mult_year(.x))
+                ~ ndbc_read_mult_year(buoy_id, .x))
 }
 
 # Download short-term data for multiple NDBC buoys.
