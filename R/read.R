@@ -57,8 +57,6 @@ ndbc_munge <- function(data) {
 #' @return a data frame
 #' @importFrom magrittr '%>%'
 #' @export
-#'
-#' @examples
 ndbc_read_5day <- function(buoy_id) {
   buoy <- toupper(buoy_id)
   print(glue::glue("Reading {buoy} (5-day)"))
@@ -74,8 +72,6 @@ ndbc_read_5day <- function(buoy_id) {
 #' @return a data frame
 #' @importFrom magrittr '%>%'
 #' @export
-#'
-#' @examples
 ndbc_read_45day <- function(buoy_id) {
   buoy <- toupper(buoy_id)
   print(glue::glue("Reading {buoy} (45-day)"))
@@ -93,8 +89,6 @@ ndbc_read_45day <- function(buoy_id) {
 #' @return a data frame
 #' @importFrom magrittr '%>%'
 #' @export
-#'
-#' @examples
 ndbc_read_month_recent <- function(buoy_id, month) {
   print(glue::glue("Reading {toupper(buoy_id)} ({month.name[month]})"))
 
@@ -137,8 +131,6 @@ ndbc_fix <- function(data) {
 #' @return a data frame
 #' @export
 #' @importFrom dplyr '%>%'
-#'
-#' @examples
 ndbc_read_year <- function(buoy_id, year) {
   print(glue::glue("Reading {toupper(buoy_id)} ({year})"))
   ndbc_read(

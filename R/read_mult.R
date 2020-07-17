@@ -111,25 +111,6 @@ ndbc_all_hist <- function(buoy_id) {
                 ~ ndbc_read_mult_year(buoy_id, .x))
 }
 
-# Download short-term data for multiple NDBC buoys.
-# Modified: 20150721
-# Parameters:
-#	* buoylist - vector of 5-letter buoy codes
-#   * scope - "5d" ('5day2' directory) or "45d" ('realtime2' directory)
-#   * path - directory to write file
-# Writes CSV file
-
-getNDBCmult <- function(buoylist, scope = "5d", path = "./") {
-  for (b in buoylist) {
-    print(paste0("downloading station ", b))
-    fn <- paste0(path, "b", b, "_", scope, ".csv")
-    data <- try(getNDBC(b, scope = scope), silent = T)
-    if (class(data)=='try-error')
-      next
-    write.csv(data, fn, row.names=F)
-  }
-}
-
 # Efficient update of local 45-day data
 # Download 5-day data, reduce to 1-day, append to 45-day file
 # Intended for daily crontab
