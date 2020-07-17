@@ -11,9 +11,9 @@ URLBASE <- "https://www.ndbc.noaa.gov/data"
 #' ndbc_read_cols('https://www.ndbc.noaa.gov/data/5day2/46053_5day.txt')
 ndbc_read_cols <- function(url) {
   readr::read_lines(url, n_max = 1) %>%
-    substring(2) %>%  # remove '#' char at beginning of line
     strsplit(split = "[[:space:]]+") %>%  # split by space --> vector
-    unlist
+    unlist %>%
+    gsub("#", "", .)
 }
 
 #' Download and read a plain-text data file from NDBC
@@ -28,9 +28,9 @@ ndbc_read <- function(url) {
     url,
     col_names = ndbc_read_cols(url),
     col_types = readr::cols(.default = "d"),
-    skip = 2,
+    skip = 1,
     na = c("MM", "99.00","999","999.0","99.0","9999.0",""),
-    comment = ""
+    comment = "#"
   )
 }
 
@@ -117,7 +117,7 @@ ndbc_read_month_recent <- function(buoy_id, month) {
 ndbc_fix <- function(data) {
   if ("YYYY" %in% names(data))
     data %<>% rename(YY = YYYY)
-  if (any(d$YY < 100))
+  if (any(data$YY < 100))
     data %<>% mutate(YY = YY + 1900)
   if (!("mm" %in% names(data)))
     data$mm <- 0
