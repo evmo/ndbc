@@ -69,10 +69,10 @@ ndbc_window_current_year <- function(buoy_id, start_date, end_date) {
   # window is within current year
   else {
     if (end < today - 45)
-      d <- ndbc_read_months(buoy_id, month(start), month(end))
+      d <- insist_read_months(buoy_id, month(start), month(end))
     else
       d <- ndbc_dedup(dplyr::bind_rows(
-        ndbc_read_months(buoy_id, month(start), month(end - 45)),
+        insist_read_months(buoy_id, month(start), month(end - 45)),
         ndbc_read_45day(buoy_id)
       ))
   }
@@ -97,10 +97,10 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
   today <- Sys.Date()
 
   if (year(end) < year(today))  # window doesn't include current year
-    d <- ndbc_read_years(buoy_id, year(start), year(end))
+    d <- insist_read_years(buoy_id, year(start), year(end))
   else {  # window includes both prior year(s) and current year
     d <- dplyr::bind_rows(
-      ndbc_read_years(buoy_id, seq(year(start), year(end) - 1)),
+      insist_read_years(buoy_id, seq(year(start), year(end) - 1)),
       ndbc_window_current_year(
         buoy_id,
         as.Date(ISOdate(year(today), 1, 1)),
@@ -120,7 +120,7 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
 #' @export
 ndbc_all_hist <- function(buoy_id) {
   purrr::map_df(avail_years_for_buoy(buoy_id),
-                ~ ndbc_read_years(buoy_id, .x))
+                ~ insist_read_years(buoy_id, .x))
 }
 
 # Efficient update of local 45-day data
