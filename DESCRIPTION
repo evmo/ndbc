@@ -12,12 +12,12 @@ Imports:
     readr,
     stringr,
     magrittr,
-    xts,
     lubridate,
     ggplot2,
     measurements,
     purrr,
     shiny,
     rvest,
-    xml2
+    xml2,
+    rlang
 RoxygenNote: 7.0.1
