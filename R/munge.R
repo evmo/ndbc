@@ -18,6 +18,13 @@ ndbc_reduce_daily <- function(data, feature) {
     summarise(!!feat_name := mean(!!feat_enq))
 }
 
+ndbc_agg_by_doy <- function(daily_data, FUN = c(mean, min, max)) {
+  daily_data %>%
+    mutate(doy = as.factor(strftime(date, "%m-%d"))) %>%
+    group_by(doy) %>%
+    summarise(across(where(is.numeric), ~FUN(.x, na.rm = T), .names = "{fn}"))
+}
+
 # Find average, min, or max of a feature by day of year.
 # Input: buoy, feature, statistic (avg, min, or max)
 # Output: aggregate data.frame, 366 rows for each day of year
