@@ -5,15 +5,11 @@
 #' @param buoy_id
 #'
 #' @return
-insist_read_months <- function(...) "dummy"
-
 ndbc_read_months <- function(buoy_id, start_month, end_month) {
-  purrr::map_df(seq(start_month, end_month),
-                ~ ndbc_read_month_recent(buoy_id, .x))
-}
-
-.onLoad <- function(lib, pkg) {
-  insist_read_months <<- purrr::insistently(ndbc_read_months)
+  purrr::map_df(seq(start_month, end_month), function(month) {
+    ndbc_read_month_recent(buoy_id, month)
+    Sys.sleep(1)
+  })
 }
 
 #' Read and bind multiple yearly datasets
@@ -22,14 +18,11 @@ ndbc_read_months <- function(buoy_id, start_month, end_month) {
 #' @param years list of years
 #'
 #' @return
-insist_read_years <- function(...) "dummy"
-
 ndbc_read_years <- function(buoy_id, years) {
-  purrr::map_df(years, ~ ndbc_read_year(buoy_id, .x))
-}
-
-.onLoad <- function(lib, pkg) {
-  insist_read_years <<- purrr::insistently(ndbc_read_years)
+  purrr::map_df(years, function(year) {
+    ndbc_read_year(buoy_id, year)
+    Sys.sleep(1)
+  })
 }
 
 #' Remove duplicate rows
@@ -60,23 +53,20 @@ ndbc_window_current_year <- function(buoy_id, start_date, end_date) {
 
   if (year(start) < year(today))
     stop("Start and end dates must be in current year")
-  # window is within past 5 days
   else if (start > today - 5)
     d <- ndbc_read_5day(buoy_id)
-  # window is within past 45 days
   else if (start > today - 45)
     d <- ndbc_read_45day(buoy_id)
-  # window is within current year
   else {
-    if (end < today - 45)
-      d <- insist_read_months(buoy_id, month(start), month(end))
-    else
+    if (end < today - 45) {
+      d <- ndbc_read_months(buoy_id, month(start), month(end))
+    } else {
       d <- ndbc_dedup(dplyr::bind_rows(
         insist_read_months(buoy_id, month(start), month(end - 45)),
         ndbc_read_45day(buoy_id)
       ))
+    }
   }
-
   dplyr::filter(d, date > start, date <= end)
 }
 
@@ -98,6 +88,8 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
 
   if (year(end) < year(today))  # window doesn't include current year
     d <- insist_read_years(buoy_id, year(start), year(end))
+  else if (year(end) == year(today))  # window within current year
+    d <- ndbc_window_current_year(buoy_id, start_date, end_date)
   else {  # window includes both prior year(s) and current year
     d <- dplyr::bind_rows(
       insist_read_years(buoy_id, seq(year(start), year(end) - 1)),

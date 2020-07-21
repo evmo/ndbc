@@ -94,7 +94,7 @@ ndbc_read_month_recent <- function(buoy_id, month) {
 
   sprintf("%s/stdmet/%s/%s%s",
           URLBASE,
-          month.name[month],
+          month.abb[month],
           tolower(buoy_id),
           paste0(month, format(Sys.Date(), "%Y"), ".txt.gz")) %>%
     ndbc_read %>%
