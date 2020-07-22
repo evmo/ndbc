@@ -6,9 +6,9 @@
 #'
 #' @return
 ndbc_read_months <- function(buoy_id, start_month, end_month) {
-  purrr::map_df(seq(start_month, end_month), function(month) {
-    ndbc_read_month_recent(buoy_id, month)
+  purrr::map_dfr(seq(start_month, end_month), function(month) {
     Sys.sleep(1)
+    ndbc_read_month_recent(buoy_id, month)
   })
 }
 
@@ -19,9 +19,9 @@ ndbc_read_months <- function(buoy_id, start_month, end_month) {
 #'
 #' @return
 ndbc_read_years <- function(buoy_id, years) {
-  purrr::map_df(years, function(year) {
-    ndbc_read_year(buoy_id, year)
+  purrr::map_dfr(years, function(year) {
     Sys.sleep(1)
+    ndbc_read_year(buoy_id, year)
   })
 }
 
@@ -62,11 +62,12 @@ ndbc_window_current_year <- function(buoy_id, start_date, end_date) {
       d <- ndbc_read_months(buoy_id, month(start), month(end))
     } else {
       d <- ndbc_dedup(dplyr::bind_rows(
-        insist_read_months(buoy_id, month(start), month(end - 45)),
+        ndbc_read_months(buoy_id, month(start), month(end - 45)),
         ndbc_read_45day(buoy_id)
       ))
     }
   }
+
   dplyr::filter(d, date > start, date <= end)
 }
 
@@ -87,12 +88,12 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
   today <- Sys.Date()
 
   if (year(end) < year(today))  # window doesn't include current year
-    d <- insist_read_years(buoy_id, year(start), year(end))
-  else if (year(end) == year(today))  # window within current year
+    d <- ndbc_read_years(buoy_id, year(start), year(end))
+  else if (year(start) == year(today))  # window within current year
     d <- ndbc_window_current_year(buoy_id, start_date, end_date)
   else {  # window includes both prior year(s) and current year
     d <- dplyr::bind_rows(
-      insist_read_years(buoy_id, seq(year(start), year(end) - 1)),
+      ndbc_read_years(buoy_id, seq(year(start), year(end) - 1)),
       ndbc_window_current_year(
         buoy_id,
         as.Date(ISOdate(year(today), 1, 1)),
@@ -112,7 +113,7 @@ ndbc_window <- function(buoy_id, start_date, end_date) {
 #' @export
 ndbc_all_hist <- function(buoy_id) {
   purrr::map_df(avail_years_for_buoy(buoy_id),
-                ~ insist_read_years(buoy_id, .x))
+                ~ ndbc_read_years(buoy_id, .x))
 }
 
 # Efficient update of local 45-day data
