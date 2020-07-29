@@ -17,6 +17,8 @@ Imports:
     measurements,
     purrr,
     shiny,
+    shinyjs,
+    leaflet,
     rvest,
     xml2,
     rlang

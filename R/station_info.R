@@ -19,7 +19,7 @@ ndbc_station_info <- function() {
       lonD = str_split_fixed(loc, " ", 4)[, 4],
       # negative coordinates for South & West
       latD = ifelse(latD == 'S', -1, 1),
-      lonD = ifelse(lonD == 'S', -1, 1),
+      lonD = ifelse(lonD == 'W', -1, 1),
       lat = lat * latD,
       lon = lon * lonD,
       id = toupper(id),
