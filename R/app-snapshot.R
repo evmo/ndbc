@@ -3,6 +3,7 @@
 #' @return
 #' @import shiny
 #' @importFrom magrittr '%<>%'
+#' @importFrom ggplot2 qplot
 #' @export
 #'
 #' @examples
@@ -37,14 +38,14 @@ snapshotApp <- function() {
     })
 
     observeEvent(input$hours,
-      rv$d %<>% filter(
+      rv$d %<>% dplyr::filter(
         date >= input$hours[1],
         date <= input$hours[2]
     ))
 
     observeEvent(input$tz_adj, {
       req(rv$d)
-      rv$d %<>% mutate(
+      rv$d %<>% dplyr::mutate(
         date = date + lubridate::hours(input$tz_adj)
       )
     })
