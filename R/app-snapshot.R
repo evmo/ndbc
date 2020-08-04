@@ -2,7 +2,6 @@
 #'
 #' @return
 #' @import shiny
-#' @importFrom magrittr '%<>%'
 #' @importFrom ggplot2 qplot
 #' @export
 #'
@@ -24,28 +23,30 @@ snapshotApp <- function() {
         message = 'Downloading from NOAA...',
         rv$d <- ndbc_window(input$buoyid, date1, date2)
       )
+
+      rv$orig <- rv$d
     })
 
     output$hoursUI <- renderUI({
-      req(rv$d)
+      req(rv$orig)
       sliderInput(
         "hours",
-        label = "Head",
-        min = min(rv$d$date),
-        max = max(rv$d$date),
-        value = c(min(rv$d$date), max(rv$d$date))
+        label = "Trim",
+        min = min(rv$orig$date),
+        max = max(rv$orig$date),
+        value = c(min(rv$orig$date), max(rv$orig$date))
       )
     })
 
     observeEvent(input$hours,
-      rv$d %<>% dplyr::filter(
+      rv$d <- rv$orig %>% dplyr::filter(
         date >= input$hours[1],
         date <= input$hours[2]
     ))
 
     observeEvent(input$tz_adj, {
-      req(rv$d)
-      rv$d %<>% dplyr::mutate(
+      req(rv$orig)
+      rv$d <- rv$orig %>% dplyr::mutate(
         date = date + lubridate::hours(input$tz_adj)
       )
     })
