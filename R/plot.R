@@ -32,7 +32,9 @@ ndbc_imperial <- function(data) {
 #' @export
 #'
 #' @examples
-ndbc_plot <- function(data, feature, ylab, tz_offset, conv_units=NULL) {
+ndbc_plot <-
+  function(data, feature, tz_offset, conv_units=NULL,
+           xlab = "Time", ylab = feature, main = "NDBC Plot") {
   feat <- enquo(feature)
   if (!is.null(conv_units)) {
     data <- data %>%
@@ -41,7 +43,8 @@ ndbc_plot <- function(data, feature, ylab, tz_offset, conv_units=NULL) {
       )
   }
   data$date <- data$date + tz_offset*3600
-  qplot(date, !!feat, data=data, geom='line', xlab="Time", ylab=ylab)
+  qplot(date, !!feat, data=data, geom='line',
+        xlab=xlab, ylab=ylab, main=main)
 }
 
 # Plot aggregate mean, min, & max for a feature, for a buoy.
