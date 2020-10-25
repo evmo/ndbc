@@ -92,11 +92,10 @@ ndbc_read_45day <- function(buoy_id) {
 ndbc_read_month_recent <- function(buoy_id, month) {
   print(glue::glue("Reading {toupper(buoy_id)} ({month.name[month]})"))
 
-  sprintf("%s/stdmet/%s/%s%s",
+  sprintf("%s/stdmet/%s/%s.txt",
           URLBASE,
           month.abb[month],
-          tolower(buoy_id),
-          paste0(month, format(Sys.Date(), "%Y"), ".txt.gz")) %>%
+          tolower(buoy_id)) %>%
     ndbc_read %>%
     ndbc_munge
 }
